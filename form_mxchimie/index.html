@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mx Chimie | Nous contacter</title>
+  <meta name="description" content="Demandez une démo live, un test dans votre établissement ou un partenariat avec Mx Chimie." />
+  <meta name="theme-color" content="#f7f8fc" />
+  <link rel="icon" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="brand">
+      <img src="logo.png" alt="" width="32" height="32" />
+      <span class="brand-name">Mx <span class="text-gradient">Chimie</span></span>
+    </header>
+
+    <section class="intro">
+      <h1>Parlons de votre projet.</h1>
+      <p>Une démo live, un test dans votre établissement ou un partenariat : dites-nous ce qui vous intéresse, nous revenons vers vous rapidement.</p>
+    </section>
+
+    <form id="form" class="card" novalidate>
+      <!-- Champ piège anti-spam : invisible pour les humains -->
+      <div class="hp" aria-hidden="true">
+        <label for="website">Ne pas remplir</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="nom">Nom et prénom</label>
+        <input id="nom" name="nom" type="text" autocomplete="name" required minlength="2" maxlength="120" placeholder="Awa Koné" aria-describedby="nom-error" />
+        <p class="error" id="nom-error" aria-live="polite"></p>
+      </div>
+
+      <div class="field">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="vous@exemple.com" aria-describedby="email-error" />
+        <p class="error" id="email-error" aria-live="polite"></p>
+      </div>
+
+      <fieldset class="field" aria-describedby="structure-error">
+        <legend>Structure</legend>
+        <div class="segmented">
+          <label><input type="radio" name="structure" value="École" required /><span>École</span></label>
+          <label><input type="radio" name="structure" value="Entreprise" /><span>Entreprise</span></label>
+          <label><input type="radio" name="structure" value="Institution" /><span>Institution</span></label>
+          <label><input type="radio" name="structure" value="Autre" /><span>Autre</span></label>
+        </div>
+        <p class="error" id="structure-error" aria-live="polite"></p>
+      </fieldset>
+
+      <fieldset class="field" aria-describedby="demandes-error">
+        <legend>Votre demande <span class="hint">plusieurs choix possibles</span></legend>
+        <div class="choices">
+          <label class="choice"><input type="checkbox" name="demandes" value="Démo live" /><span class="box" aria-hidden="true"></span><span>Démo live</span></label>
+          <label class="choice"><input type="checkbox" name="demandes" value="Cadre de test dans mon établissement" /><span class="box" aria-hidden="true"></span><span>Cadre de test dans mon établissement</span></label>
+          <label class="choice"><input type="checkbox" name="demandes" value="Partenariat / collaboration" /><span class="box" aria-hidden="true"></span><span>Partenariat / collaboration</span></label>
+          <label class="choice"><input type="checkbox" name="demandes" value="Autre" /><span class="box" aria-hidden="true"></span><span>Autre</span></label>
+        </div>
+        <p class="error" id="demandes-error" aria-live="polite"></p>
+      </fieldset>
+
+      <div class="field">
+        <label for="message">Message <span class="hint" id="message-hint">facultatif</span></label>
+        <textarea id="message" name="message" rows="4" maxlength="2000" placeholder="Précisions ou questions…" aria-describedby="message-error"></textarea>
+        <p class="error" id="message-error" aria-live="polite"></p>
+      </div>
+
+      <div class="actions">
+        <button id="submit" class="btn" type="submit">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="btn-label">Envoyer ma demande</span>
+        </button>
+        <p class="form-error" id="form-error" role="alert"></p>
+      </div>
+    </form>
+
+    <section id="success" class="card success" hidden tabindex="-1">
+      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5" /><path d="M8 12.2l2.7 2.7L16.2 9.4" />
+      </svg>
+      <h2>Merci, votre demande est bien envoyée.</h2>
+      <p>L'équipe Mx Chimie vous répondra à l'adresse indiquée. Pour toute question en attendant : <a href="mailto:mxchimie@gmail.com">mxchimie@gmail.com</a>.</p>
+      <button type="button" id="again" class="link">Envoyer une autre demande</button>
+    </section>
+
+    <footer class="foot">© 2026 Mx Chimie · <a href="mailto:mxchimie@gmail.com">mxchimie@gmail.com</a></footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
