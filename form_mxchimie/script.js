@@ -21,6 +21,9 @@
   const nextBtn = document.getElementById("next");
   const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Écran tactile (iPhone, Android) : pas de focus automatique, qui ouvrirait le clavier
+  // et ferait défiler la page en plein milieu de l'animation.
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
 
   let current = 0;
   let autoTimer = null;
@@ -80,6 +83,11 @@
   function go(index) {
     clearTimeout(autoTimer);
     const target = Math.max(0, Math.min(LAST, index));
+    if (isTouch) {
+      // Referme le clavier et remet la page en place AVANT de lancer le glissement.
+      if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+      window.scrollTo(0, 0);
+    }
     form.classList.toggle("going-back", target < current);
     current = target;
     steps.forEach((s, i) => {
@@ -96,7 +104,7 @@
     nextBtn.disabled = current === LAST;
     if (current > 0) announcer.textContent = `Question ${current} sur ${QUESTIONS}`;
     // On attend la fin du glissement avant de donner le focus, pour éviter un saut de page.
-    setTimeout(() => focusStep(steps[current]), reduceMotion ? 0 : 320);
+    if (!isTouch) setTimeout(() => focusStep(steps[current]), reduceMotion ? 0 : 320);
   }
 
   function next() {
