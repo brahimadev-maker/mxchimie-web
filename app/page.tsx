@@ -4,6 +4,7 @@ import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
 import PricingCalculator from "@/components/PricingCalculator";
 import ContactForm, { CONTACT_EMAIL } from "@/components/ContactForm";
+import { DEMO_URL } from "@/lib/site";
 
 /* ---------- Icônes ---------- */
 type IconProps = { className?: string };
@@ -141,7 +142,7 @@ export default function Home() {
                 </p>
               </Reveal>
               <Reveal delay={180} className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
-                <a href="#contact" data-track="Hero : demander une démo" className="btn btn-primary">
+                <a href={DEMO_URL} data-track="Hero : demander une démo" className="btn btn-primary">
                   Demander une démo dans mon école
                 </a>
                 <a href="#fonctionnement" className="link-arrow text-[15px]">
