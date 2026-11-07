@@ -63,22 +63,43 @@ body {
   align-self: center;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(48px);
+  transform: translateY(56px) scale(0.98);
+  filter: blur(6px);
   transition:
-    opacity var(--dur) var(--ease),
+    opacity 0.45s var(--ease),
     transform var(--dur) var(--ease),
+    filter 0.45s var(--ease),
     visibility 0s linear var(--dur);
 }
 .step.is-active {
   opacity: 1;
   visibility: visible;
   transform: none;
+  filter: none;
   transition:
     opacity var(--dur) var(--ease),
     transform var(--dur) var(--ease),
+    filter var(--dur) var(--ease),
     visibility 0s;
 }
-.step.is-past { transform: translateY(-48px); }
+/* La question répondue part vers le haut ; au retour, elle revient d'en haut. */
+.step.is-past { transform: translateY(-56px) scale(0.98); }
+
+/* Entrée en cascade des éléments de la question active (l'ordre --i est posé par script.js). */
+.step .anim {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.step.is-active .anim {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.55s var(--ease), transform 0.65s var(--ease);
+  transition-delay: calc(140ms + var(--i, 0) * 65ms);
+}
+/* En revenant en arrière, la cascade part d'en haut. */
+.stage.going-back .step .anim { transform: translateY(-18px); }
+.stage.going-back .step.is-active .anim { transform: none; }
 
 /* Questions */
 .qnum {
@@ -93,6 +114,7 @@ body {
   font: 600 clamp(1.5rem, 1.15rem + 1.6vw, 2.125rem)/1.2 "Sora", sans-serif;
   letter-spacing: -0.025em;
   color: var(--fg);
+  text-wrap: balance;
 }
 h1.title { font-weight: 700; font-size: clamp(2rem, 1.5rem + 2.4vw, 2.875rem); line-height: 1.08; letter-spacing: -0.03em; }
 .lead { margin: 14px 0 0; color: var(--mist); font-size: 1.125rem; max-width: 34rem; }
@@ -203,7 +225,15 @@ kbd { font: 500 12px/1 "Inter", sans-serif; padding: 3px 6px; border-radius: 5px
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 /* Confirmation */
-.success { outline: none; animation: rise var(--dur) var(--ease) both; }
+.success { outline: none; }
+.success > * { animation: rise 0.7s var(--ease) both; }
+.success > :nth-child(2) { animation-delay: 0.08s; }
+.success > :nth-child(3) { animation-delay: 0.16s; }
+.success > :nth-child(4) { animation-delay: 0.24s; }
+.success svg { animation: pop 0.6s var(--ease) both; }
+.success svg path { stroke-dasharray: 14; stroke-dashoffset: 14; animation: draw 0.45s 0.3s ease-out forwards; }
+@keyframes pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
 .success svg { color: #0891b2; }
 .success .title { margin-top: 18px; }
 .success a { color: inherit; }
@@ -222,6 +252,6 @@ kbd { font: 500 12px/1 "Inter", sans-serif; padding: 3px 6px; border-radius: 5px
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .step, .step.is-active, .step.is-past { transform: none; }
+  .step, .step.is-active, .step.is-past, .step .anim, .stage.going-back .step .anim { transform: none; filter: none; }
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }

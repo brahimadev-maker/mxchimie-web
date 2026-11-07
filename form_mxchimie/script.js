@@ -25,6 +25,14 @@
   let current = 0;
   let autoTimer = null;
 
+  // Prépare l'entrée en cascade : chaque élément reçoit son rang d'apparition.
+  steps.forEach((step) => {
+    step.querySelectorAll(".qnum, .title, .lead, .sub, .line, .option, .actions").forEach((el, i) => {
+      el.classList.add("anim");
+      el.style.setProperty("--i", i);
+    });
+  });
+
   // ---------- Données et validation ----------
   function readData() {
     const d = new FormData(form);
@@ -71,7 +79,9 @@
 
   function go(index) {
     clearTimeout(autoTimer);
-    current = Math.max(0, Math.min(LAST, index));
+    const target = Math.max(0, Math.min(LAST, index));
+    form.classList.toggle("going-back", target < current);
+    current = target;
     steps.forEach((s, i) => {
       s.classList.toggle("is-active", i === current);
       s.classList.toggle("is-past", i < current);
