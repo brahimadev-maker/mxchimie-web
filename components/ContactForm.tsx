@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
+import { track } from "@/lib/track";
 
 export const CONTACT_EMAIL = "mxchimie@gmail.com";
 
@@ -46,6 +47,7 @@ export default function ContactForm() {
       "",
       get("message"),
     ].join("\n");
+    track("contact_envoye", get("role"));
     window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setSent(true);
   }

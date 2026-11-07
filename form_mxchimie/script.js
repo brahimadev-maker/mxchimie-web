@@ -70,6 +70,48 @@
     }
   }
 
+  // ---------- Mesure d'audience (anonyme, visible dans le tableau de bord) ----------
+  const tracked = new Set();
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
+  }
+  function storedId(getStorage, key) {
+    try {
+      const s = getStorage();
+      let v = s.getItem(key);
+      if (!v) s.setItem(key, (v = uid()));
+      return v;
+    } catch (e) {
+      return uid();
+    }
+  }
+  function track(type, etape) {
+    const key = type + (etape == null ? "" : etape);
+    if (tracked.has(key) || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return;
+    tracked.add(key);
+    const w = Math.min(screen.width, innerWidth);
+    try {
+      fetch(cfg.SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/evenements", {
+        method: "POST",
+        headers: { apikey: cfg.SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({
+          visiteur: storedId(() => localStorage, "mx_v"),
+          session: storedId(() => sessionStorage, "mx_s"),
+          type: type,
+          page: location.pathname.slice(0, 300),
+          appareil: w < 600 ? "mobile" : w < 1024 && isTouch ? "tablette" : "ordinateur",
+          etape: etape == null ? null : etape,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
   // ---------- Navigation ----------
   function focusStep(step) {
     const target =
@@ -102,7 +144,11 @@
     counter.textContent = current > 0 ? `${current} / ${QUESTIONS}` : "";
     prevBtn.disabled = current === 0;
     nextBtn.disabled = current === LAST;
-    if (current > 0) announcer.textContent = `Question ${current} sur ${QUESTIONS}`;
+    if (current > 0) {
+      announcer.textContent = `Question ${current} sur ${QUESTIONS}`;
+      track("formulaire_commence");
+      track("formulaire_etape", current);
+    }
     // On attend la fin du glissement avant de donner le focus, pour éviter un saut de page.
     if (!isTouch) setTimeout(() => focusStep(steps[current]), reduceMotion ? 0 : 320);
   }
@@ -254,6 +300,7 @@
     setLoading(true);
     try {
       await send(data);
+      track("formulaire_envoye");
       showSuccess();
     } catch (err) {
       console.error("Mx Chimie : échec de l'envoi", err);
@@ -288,4 +335,5 @@
   });
 
   go(0);
+  track("formulaire_ouvert");
 })();

@@ -56,7 +56,7 @@ export default function Nav() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <a href="#contact" className="btn btn-primary btn-sm hidden sm:inline-flex">
+          <a href="#contact" data-track="Menu : demander une démo" className="btn btn-primary btn-sm hidden sm:inline-flex">
             Demander une démo
           </a>
           <button
@@ -89,7 +89,7 @@ export default function Nav() {
               </li>
             ))}
           </ul>
-          <a href="#contact" onClick={() => setOpen(false)} className="btn btn-primary mt-6 w-full">
+          <a href="#contact" data-track="Menu mobile : demander une démo" onClick={() => setOpen(false)} className="btn btn-primary mt-6 w-full">
             Demander une démo
           </a>
         </div>

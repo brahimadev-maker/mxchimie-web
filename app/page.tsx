@@ -141,7 +141,7 @@ export default function Home() {
                 </p>
               </Reveal>
               <Reveal delay={180} className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
-                <a href="#contact" className="btn btn-primary">
+                <a href="#contact" data-track="Hero : demander une démo" className="btn btn-primary">
                   Demander une démo dans mon école
                 </a>
                 <a href="#fonctionnement" className="link-arrow text-[15px]">
@@ -342,7 +342,7 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <a href="#contact" className="btn btn-primary mt-8 w-full">
+                <a href="#contact" data-track="Offre : obtenir un devis" className="btn btn-primary mt-8 w-full">
                   Obtenir un devis
                 </a>
               </Reveal>
