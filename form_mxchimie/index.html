@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Mx Chimie | Nous contacter</title>
   <meta name="description" content="Demandez une démo live, un test dans votre établissement ou un partenariat avec Mx Chimie." />
   <meta name="theme-color" content="#f7f8fc" />
@@ -13,84 +13,138 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="page">
-    <header class="brand">
-      <img src="logo.png" alt="" width="32" height="32" />
+  <div class="progress" role="progressbar" aria-label="Progression" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+    <span class="progress-bar" id="progress-bar"></span>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <img src="logo.png" alt="" width="28" height="28" />
       <span class="brand-name">Mx <span class="text-gradient">Chimie</span></span>
-    </header>
+    </div>
+    <span class="counter" id="counter" aria-hidden="true"></span>
+  </header>
 
-    <section class="intro">
-      <h1>Parlons de votre projet.</h1>
-      <p>Une démo live, un test dans votre établissement ou un partenariat : dites-nous ce qui vous intéresse, nous revenons vers vous rapidement.</p>
-    </section>
-
-    <form id="form" class="card" novalidate>
+  <main class="stage-wrap">
+    <form id="form" class="stage" novalidate>
       <!-- Champ piège anti-spam : invisible pour les humains -->
       <div class="hp" aria-hidden="true">
         <label for="website">Ne pas remplir</label>
         <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
       </div>
 
-      <div class="field">
-        <label for="nom">Nom et prénom</label>
-        <input id="nom" name="nom" type="text" autocomplete="name" required minlength="2" maxlength="120" placeholder="Awa Koné" aria-describedby="nom-error" />
+      <!-- 0. Accueil -->
+      <section class="step" data-step="0" aria-labelledby="t0">
+        <h1 class="title" id="t0">Parlons de votre projet.</h1>
+        <p class="lead">Une démo live, un test dans votre établissement ou un partenariat : 5 questions rapides, moins d'une minute.</p>
+        <div class="actions">
+          <button type="button" class="btn" data-next>Commencer</button>
+          <span class="kbd-hint">ou appuyez sur <kbd>Entrée ↵</kbd></span>
+        </div>
+      </section>
+
+      <!-- 1. Nom -->
+      <section class="step" data-step="1" data-field="nom" aria-labelledby="t1">
+        <p class="qnum">1 <span aria-hidden="true">→</span></p>
+        <label class="title" id="t1" for="nom">Quel est votre nom et prénom&nbsp;?</label>
+        <input id="nom" name="nom" class="line" type="text" autocomplete="name" maxlength="120" placeholder="Votre réponse" aria-describedby="nom-error" />
         <p class="error" id="nom-error" aria-live="polite"></p>
-      </div>
+        <div class="actions">
+          <button type="button" class="btn" data-next>Suivant</button>
+          <span class="kbd-hint">ou appuyez sur <kbd>Entrée ↵</kbd></span>
+        </div>
+      </section>
 
-      <div class="field">
-        <label for="email">Adresse e-mail</label>
-        <input id="email" name="email" type="email" autocomplete="email" required maxlength="200" placeholder="vous@exemple.com" aria-describedby="email-error" />
+      <!-- 2. E-mail -->
+      <section class="step" data-step="2" data-field="email" aria-labelledby="t2">
+        <p class="qnum">2 <span aria-hidden="true">→</span></p>
+        <label class="title" id="t2" for="email">Votre adresse e-mail&nbsp;?</label>
+        <p class="sub">Nous vous répondrons à cette adresse.</p>
+        <input id="email" name="email" class="line" type="email" inputmode="email" autocomplete="email" maxlength="200" placeholder="vous@exemple.com" aria-describedby="email-error" />
         <p class="error" id="email-error" aria-live="polite"></p>
-      </div>
-
-      <fieldset class="field" aria-describedby="structure-error">
-        <legend>Structure</legend>
-        <div class="segmented">
-          <label><input type="radio" name="structure" value="École" required /><span>École</span></label>
-          <label><input type="radio" name="structure" value="Entreprise" /><span>Entreprise</span></label>
-          <label><input type="radio" name="structure" value="Institution" /><span>Institution</span></label>
-          <label><input type="radio" name="structure" value="Autre" /><span>Autre</span></label>
+        <div class="actions">
+          <button type="button" class="btn" data-next>Suivant</button>
+          <span class="kbd-hint">ou appuyez sur <kbd>Entrée ↵</kbd></span>
         </div>
+      </section>
+
+      <!-- 3. Structure -->
+      <section class="step" data-step="3" data-field="structure" aria-labelledby="t3">
+        <p class="qnum">3 <span aria-hidden="true">→</span></p>
+        <fieldset class="group" aria-describedby="structure-error">
+          <legend class="title" id="t3">Quel type de structure représentez-vous&nbsp;?</legend>
+          <div class="options" data-auto-next>
+            <label class="option"><input type="radio" name="structure" value="École" /><kbd class="key">A</kbd><span>École</span></label>
+            <label class="option"><input type="radio" name="structure" value="Entreprise" /><kbd class="key">B</kbd><span>Entreprise</span></label>
+            <label class="option"><input type="radio" name="structure" value="Institution" /><kbd class="key">C</kbd><span>Institution</span></label>
+            <label class="option"><input type="radio" name="structure" value="Autre" /><kbd class="key">D</kbd><span>Autre</span></label>
+          </div>
+        </fieldset>
         <p class="error" id="structure-error" aria-live="polite"></p>
-      </fieldset>
-
-      <fieldset class="field" aria-describedby="demandes-error">
-        <legend>Votre demande <span class="hint">plusieurs choix possibles</span></legend>
-        <div class="choices">
-          <label class="choice"><input type="checkbox" name="demandes" value="Démo live" /><span class="box" aria-hidden="true"></span><span>Démo live</span></label>
-          <label class="choice"><input type="checkbox" name="demandes" value="Cadre de test dans mon établissement" /><span class="box" aria-hidden="true"></span><span>Cadre de test dans mon établissement</span></label>
-          <label class="choice"><input type="checkbox" name="demandes" value="Partenariat / collaboration" /><span class="box" aria-hidden="true"></span><span>Partenariat / collaboration</span></label>
-          <label class="choice"><input type="checkbox" name="demandes" value="Autre" /><span class="box" aria-hidden="true"></span><span>Autre</span></label>
+        <div class="actions">
+          <button type="button" class="btn" data-next>Suivant</button>
         </div>
+      </section>
+
+      <!-- 4. Demande -->
+      <section class="step" data-step="4" data-field="demandes" aria-labelledby="t4">
+        <p class="qnum">4 <span aria-hidden="true">→</span></p>
+        <fieldset class="group" aria-describedby="demandes-error">
+          <legend class="title" id="t4">Que souhaitez-vous&nbsp;?</legend>
+          <p class="sub">Plusieurs choix possibles.</p>
+          <div class="options">
+            <label class="option"><input type="checkbox" name="demandes" value="Démo live" /><kbd class="key">A</kbd><span>Démo live</span></label>
+            <label class="option"><input type="checkbox" name="demandes" value="Cadre de test dans mon établissement" /><kbd class="key">B</kbd><span>Cadre de test dans mon établissement</span></label>
+            <label class="option"><input type="checkbox" name="demandes" value="Partenariat / collaboration" /><kbd class="key">C</kbd><span>Partenariat / collaboration</span></label>
+            <label class="option"><input type="checkbox" name="demandes" value="Autre" /><kbd class="key">D</kbd><span>Autre</span></label>
+          </div>
+        </fieldset>
         <p class="error" id="demandes-error" aria-live="polite"></p>
-      </fieldset>
+        <div class="actions">
+          <button type="button" class="btn" data-next>Suivant</button>
+          <span class="kbd-hint">ou appuyez sur <kbd>Entrée ↵</kbd></span>
+        </div>
+      </section>
 
-      <div class="field">
-        <label for="message">Message <span class="hint" id="message-hint">facultatif</span></label>
-        <textarea id="message" name="message" rows="4" maxlength="2000" placeholder="Précisions ou questions…" aria-describedby="message-error"></textarea>
+      <!-- 5. Message + envoi -->
+      <section class="step" data-step="5" data-field="message" aria-labelledby="t5">
+        <p class="qnum">5 <span aria-hidden="true">→</span></p>
+        <label class="title" id="t5" for="message">Un message à ajouter&nbsp;?</label>
+        <p class="sub" id="message-hint">Facultatif : précisions ou questions.</p>
+        <textarea id="message" name="message" class="line area" rows="3" maxlength="2000" placeholder="Votre message" aria-describedby="message-hint message-error"></textarea>
         <p class="error" id="message-error" aria-live="polite"></p>
-      </div>
-
-      <div class="actions">
-        <button id="submit" class="btn" type="submit">
-          <span class="spinner" aria-hidden="true"></span>
-          <span class="btn-label">Envoyer ma demande</span>
-        </button>
+        <div class="actions">
+          <button id="submit" class="btn" type="submit">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-label">Envoyer ma demande</span>
+          </button>
+          <span class="kbd-hint">ou <kbd>Ctrl</kbd> + <kbd>Entrée ↵</kbd></span>
+        </div>
         <p class="form-error" id="form-error" role="alert"></p>
-      </div>
+      </section>
     </form>
 
-    <section id="success" class="card success" hidden tabindex="-1">
-      <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <!-- Confirmation -->
+    <section id="success" class="success" hidden tabindex="-1">
+      <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="9.5" /><path d="M8 12.2l2.7 2.7L16.2 9.4" />
       </svg>
-      <h2>Merci, votre demande est bien envoyée.</h2>
-      <p>L'équipe Mx Chimie vous répondra à l'adresse indiquée. Pour toute question en attendant : <a href="mailto:mxchimie@gmail.com">mxchimie@gmail.com</a>.</p>
+      <h2 class="title">Merci, votre demande est bien envoyée.</h2>
+      <p class="lead">L'équipe Mx Chimie vous répondra à l'adresse indiquée. Pour toute question en attendant : <a href="mailto:mxchimie@gmail.com">mxchimie@gmail.com</a>.</p>
       <button type="button" id="again" class="link">Envoyer une autre demande</button>
     </section>
-
-    <footer class="foot">© 2026 Mx Chimie · <a href="mailto:mxchimie@gmail.com">mxchimie@gmail.com</a></footer>
   </main>
+
+  <nav class="arrows" id="arrows" aria-label="Navigation entre les questions">
+    <button type="button" id="prev" aria-label="Question précédente">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg>
+    </button>
+    <button type="button" id="next" aria-label="Question suivante">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+    </button>
+  </nav>
+
+  <p class="sr-only" id="announcer" aria-live="polite"></p>
 
   <script src="config.js"></script>
   <script src="script.js"></script>

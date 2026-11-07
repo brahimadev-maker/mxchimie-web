@@ -1,21 +1,31 @@
-// Mx Chimie : formulaire de contact -> Supabase (API REST, sans librairie).
+// Mx Chimie : formulaire question par question -> Supabase (API REST, sans librairie).
 (function () {
   "use strict";
 
   const cfg = window.MX_CONFIG || {};
   const form = document.getElementById("form");
+  const steps = Array.from(form.querySelectorAll(".step"));
+  const LAST = steps.length - 1; // index de la dernière question
+  const QUESTIONS = LAST; // l'étape 0 est l'accueil
   const success = document.getElementById("success");
   const submitBtn = document.getElementById("submit");
   const btnLabel = submitBtn.querySelector(".btn-label");
   const formError = document.getElementById("form-error");
   const messageHint = document.getElementById("message-hint");
+  const progress = document.querySelector(".progress");
+  const progressBar = document.getElementById("progress-bar");
+  const counter = document.getElementById("counter");
+  const announcer = document.getElementById("announcer");
+  const arrows = document.getElementById("arrows");
+  const prevBtn = document.getElementById("prev");
+  const nextBtn = document.getElementById("next");
   const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const isConfigured = () =>
-    cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
-    !cfg.SUPABASE_URL.includes("VOTRE-PROJET") && !cfg.SUPABASE_ANON_KEY.includes("VOTRE_CLE");
+  let current = 0;
+  let autoTimer = null;
 
-  // ---------- Lecture et validation ----------
+  // ---------- Données et validation ----------
   function readData() {
     const d = new FormData(form);
     return {
@@ -33,52 +43,140 @@
     if (data.nom.length < 2) errors.nom = "Indiquez votre nom et prénom.";
     if (!data.email) errors.email = "Indiquez votre adresse e-mail.";
     else if (!EMAIL_RE.test(data.email)) errors.email = "Cette adresse e-mail ne semble pas valide.";
-    if (!data.structure) errors.structure = "Choisissez le type de structure.";
-    if (data.demandes.length === 0) errors.demandes = "Cochez au moins une demande.";
-    if (data.demandes.includes("Autre") && !data.message) errors.message = "Précisez votre demande « Autre » dans le message.";
+    if (!data.structure) errors.structure = "Choisissez une option pour continuer.";
+    if (data.demandes.length === 0) errors.demandes = "Cochez au moins une option pour continuer.";
+    if (data.demandes.includes("Autre") && !data.message) errors.message = "Précisez votre demande « Autre » en quelques mots.";
     return errors;
   }
 
   function setFieldError(name, msg) {
     const el = document.getElementById(name + "-error");
     if (el) el.textContent = msg || "";
-    if (name === "structure") form.querySelector(".segmented").classList.toggle("invalid", !!msg);
-    else if (name === "demandes") form.querySelector(".choices").classList.toggle("invalid", !!msg);
-    else {
-      const input = form.elements[name];
-      if (input) input.setAttribute("aria-invalid", msg ? "true" : "false");
+    if (name === "structure" || name === "demandes") {
+      steps.find((s) => s.dataset.field === name).querySelector(".options").classList.toggle("invalid", !!msg);
+    } else if (form.elements[name]) {
+      form.elements[name].setAttribute("aria-invalid", msg ? "true" : "false");
     }
   }
 
-  function showErrors(errors) {
-    ["nom", "email", "structure", "demandes", "message"].forEach((n) => setFieldError(n, errors[n]));
-    const first = Object.keys(errors)[0];
-    if (!first) return;
+  // ---------- Navigation ----------
+  function focusStep(step) {
     const target =
-      first === "structure" ? form.querySelector('input[name="structure"]') :
-      first === "demandes" ? form.querySelector('input[name="demandes"]') :
-      form.elements[first];
-    if (target) target.focus();
+      step.querySelector(".line") ||
+      step.querySelector("input:checked") ||
+      step.querySelector(".option input") ||
+      step.querySelector("[data-next], button[type=submit]");
+    if (target) target.focus({ preventScroll: true });
   }
 
-  // Les erreurs s'effacent dès que l'utilisateur corrige.
+  function go(index) {
+    clearTimeout(autoTimer);
+    current = Math.max(0, Math.min(LAST, index));
+    steps.forEach((s, i) => {
+      s.classList.toggle("is-active", i === current);
+      s.classList.toggle("is-past", i < current);
+      s.inert = i !== current;
+      s.setAttribute("aria-hidden", i === current ? "false" : "true");
+    });
+    const answered = Math.max(0, current - 1);
+    progressBar.style.width = `${(answered / QUESTIONS) * 100}%`;
+    progress.setAttribute("aria-valuenow", String(answered));
+    counter.textContent = current > 0 ? `${current} / ${QUESTIONS}` : "";
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === LAST;
+    if (current > 0) announcer.textContent = `Question ${current} sur ${QUESTIONS}`;
+    // On attend la fin du glissement avant de donner le focus, pour éviter un saut de page.
+    setTimeout(() => focusStep(steps[current]), reduceMotion ? 0 : 320);
+  }
+
+  function next() {
+    const field = steps[current].dataset.field;
+    if (field) {
+      const err = validate(readData())[field];
+      setFieldError(field, err);
+      if (err) {
+        focusStep(steps[current]);
+        return;
+      }
+    }
+    if (current < LAST) go(current + 1);
+  }
+
+  function prev() {
+    if (current > 0) go(current - 1);
+  }
+
+  form.querySelectorAll("[data-next]").forEach((b) => b.addEventListener("click", next));
+  prevBtn.addEventListener("click", prev);
+  nextBtn.addEventListener("click", next);
+
+  // ---------- Clavier ----------
+  document.addEventListener("keydown", (e) => {
+    if (!success.hidden) return;
+    const t = e.target;
+    const inText = t.matches && t.matches("input[type=text], input[type=email], textarea");
+
+    if (e.key === "Enter") {
+      if (t.tagName === "TEXTAREA") {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          form.requestSubmit();
+        }
+        return; // Entrée seule = retour à la ligne
+      }
+      if (t.tagName === "BUTTON" || t.tagName === "A") return; // le bouton gère son propre clic
+      e.preventDefault(); // empêche l'envoi implicite du formulaire
+      next();
+      return;
+    }
+
+    // Raccourcis A, B, C, D pour les choix
+    if (!inText && !e.ctrlKey && !e.metaKey && !e.altKey && /^[a-d]$/i.test(e.key)) {
+      const opts = steps[current].querySelectorAll(".option input");
+      const input = opts["abcd".indexOf(e.key.toLowerCase())];
+      if (!input) return;
+      e.preventDefault();
+      input.type === "radio" ? (input.checked = true) : (input.checked = !input.checked);
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      input.focus({ preventScroll: true });
+    }
+  });
+
+  // ---------- Choix ----------
+  form.addEventListener("change", (e) => {
+    const t = e.target;
+    if (t.name === "structure" || t.name === "demandes") {
+      setFieldError(t.name, "");
+      t.closest(".option").classList.remove("flash");
+      void t.offsetWidth;
+      t.closest(".option").classList.add("flash");
+    }
+    // Un choix unique passe automatiquement à la question suivante.
+    if (t.type === "radio" && t.closest("[data-auto-next]")) {
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(next, 420);
+    }
+    if (t.name === "demandes") {
+      const autre = form.querySelector('input[name="demandes"][value="Autre"]').checked;
+      messageHint.textContent = autre ? "Obligatoire : précisez votre demande « Autre »." : "Facultatif : précisions ou questions.";
+    }
+  });
+
+  // Les erreurs des champs texte s'effacent dès qu'on corrige.
   form.addEventListener("input", (e) => {
     const name = e.target.name;
-    if (!name || name === "website") return;
-    const errors = validate(readData());
-    setFieldError(name, errors[name]);
-    if (name === "demandes") setFieldError("message", errors.message);
+    if (name === "nom" || name === "email" || name === "message") {
+      const el = document.getElementById(name + "-error");
+      if (el && el.textContent) setFieldError(name, validate(readData())[name]);
+    }
     formError.textContent = "";
   });
 
-  // Le message devient obligatoire si « Autre » est coché.
-  form.addEventListener("change", (e) => {
-    if (e.target.name !== "demandes") return;
-    const autre = form.querySelector('input[name="demandes"][value="Autre"]').checked;
-    messageHint.textContent = autre ? "obligatoire si « Autre »" : "facultatif";
-  });
-
   // ---------- Envoi ----------
+  const isConfigured = () =>
+    cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
+    !cfg.SUPABASE_URL.includes("VOTRE-PROJET") && !cfg.SUPABASE_ANON_KEY.includes("VOTRE_CLE");
+
   function setLoading(on) {
     submitBtn.disabled = on;
     submitBtn.classList.toggle("loading", on);
@@ -93,13 +191,8 @@
       const res = await fetch(`${cfg.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${cfg.TABLE || "demandes"}`, {
         method: "POST",
         headers: Object.assign(
-          {
-            apikey: cfg.SUPABASE_ANON_KEY,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          // Les anciennes clés "anon" (JWT, commençant par eyJ) passent aussi en Bearer ;
-          // les clés modernes "sb_publishable_" s'envoient uniquement dans apikey.
+          { apikey: cfg.SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+          // Anciennes clés "anon" (JWT) : aussi en Bearer. Clés "sb_publishable_" : apikey uniquement.
           cfg.SUPABASE_ANON_KEY.startsWith("eyJ") ? { Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}` } : {}
         ),
         body: JSON.stringify({
@@ -111,10 +204,7 @@
         }),
         signal: controller.signal,
       });
-      if (!res.ok) {
-        const detail = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status} ${detail}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text().catch(() => "")}`);
     } finally {
       clearTimeout(timer);
     }
@@ -122,24 +212,24 @@
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (submitBtn.disabled) return;
     formError.textContent = "";
     const data = readData();
 
+    // Vérification finale : on ramène l'utilisateur sur la première question à corriger.
     const errors = validate(data);
-    if (Object.keys(errors).length) {
-      showErrors(errors);
+    const firstBad = steps.findIndex((s) => s.dataset.field && errors[s.dataset.field]);
+    if (firstBad !== -1) {
+      Object.keys(errors).forEach((k) => setFieldError(k, errors[k]));
+      if (firstBad !== current) go(firstBad);
+      else focusStep(steps[current]);
       return;
     }
 
-    // Robot détecté (champ piège rempli) : on simule un succès sans rien envoyer.
-    if (data.website) {
-      showSuccess();
-      return;
-    }
+    if (data.website) return showSuccess(); // robot : succès simulé, rien n'est envoyé
 
     if (!isConfigured()) {
       formError.textContent = "Le formulaire n'est pas encore relié à la base de données (config.js).";
-      console.warn("Mx Chimie : renseignez SUPABASE_URL et SUPABASE_ANON_KEY dans config.js");
       return;
     }
 
@@ -161,16 +251,23 @@
   // ---------- Confirmation ----------
   function showSuccess() {
     form.hidden = true;
+    arrows.hidden = true;
     success.hidden = false;
+    progressBar.style.width = "100%";
+    progress.setAttribute("aria-valuenow", String(QUESTIONS));
+    counter.textContent = "";
     success.focus();
   }
 
   document.getElementById("again").addEventListener("click", () => {
     form.reset();
-    messageHint.textContent = "facultatif";
+    messageHint.textContent = "Facultatif : précisions ou questions.";
     ["nom", "email", "structure", "demandes", "message"].forEach((n) => setFieldError(n, ""));
     success.hidden = true;
     form.hidden = false;
-    form.elements.nom.focus();
+    arrows.hidden = false;
+    go(1);
   });
+
+  go(0);
 })();
